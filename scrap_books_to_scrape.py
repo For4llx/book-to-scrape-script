@@ -20,9 +20,11 @@ if response.ok:
     soup = BeautifulSoup(page, "html.parser")
 
     product_page_url = url
-    product_information = soup.find('table', class_='table table-striped').findAll('td')
+    product_information = [td.text for td in soup.find('table', class_='table table-striped').findAll('td')]
     product_title = soup.find('h1').text
     product_description = soup.find('div', id='product_description').find_next('p').text
     category = soup.find('ul', class_='breadcrumb').findAll('a')[2].text
     review_rating = soup.find('p', class_='star-rating')['class'][1]
     image_url = soup.find('img')['src']
+
+    print(product_information)
