@@ -12,29 +12,40 @@ category = []
 review_rating = []
 image_url = []
 
-catalogue_url = "https://books.toscrape.com/catalogue/"
-travel_url = "https://books.toscrape.com/catalogue/category/books/travel_2/index.html"
-response = requests.get(travel_url)
+category_index_url = 'https://books.toscrape.com/catalogue/category/books/mystery_3/index.html'
+response = requests.get(category_index_url)
 
 if response.ok:
-    page = response.content
-    soup = BeautifulSoup(page, "html.parser")
-    product_page_url = [catalogue_url + h3.find_next('a')['href'].replace('../', '') for h3 in soup.findAll('h3')]
+    category_index_page = response.content
+    soup = BeautifulSoup(category_index_page, "html.parser")
 
-    for url in product_page_url:
+    pages = soup.find('li', class_='current').text.split()[-1]
 
-        response = requests.get(url)
+catalogue_url = "https://books.toscrape.com/catalogue/"
 
-        if response.ok:
-            page = response.content
-            soup = BeautifulSoup(page, "html.parser")
+for page in range(int(pages)+1):
+    category_url = 'https://books.toscrape.com/catalogue/category/books/mystery_3/page-{page}.html'.format(page=page)
+    response = requests.get(category_url)
 
-            product_page_url = url
-            product_information = [td.text for td in soup.find('table', class_='table table-striped').findAll('td')]
-            product_title = soup.find('h1').text
-            product_description = soup.find('div', id='product_description').find_next('p').text
-            category = soup.find('ul', class_='breadcrumb').findAll('a')[2].text
-            review_rating = soup.find('p', class_='star-rating')['class'][1]
-            image_url = soup.find('img')['src']
+    if response.ok:
+        page = response.content
+        soup = BeautifulSoup(page, "html.parser")
+        product_page_url = [catalogue_url + h3.find_next('a')['href'].replace('../', '') for h3 in soup.findAll('h3')]
 
-            print(product_page_url)
+        for url in product_page_url:
+
+            response = requests.get(url)
+
+            if response.ok:
+                page = response.content
+                soup = BeautifulSoup(page, "html.parser")
+
+                product_page_url = url
+                product_information = [td.text for td in soup.find('table', class_='table table-striped').findAll('td')]
+                product_title = soup.find('h1').text
+                product_description = soup.find('div', id='product_description').find_next('p').text
+                category = soup.find('ul', class_='breadcrumb').findAll('a')[2].text
+                review_rating = soup.find('p', class_='star-rating')['class'][1]
+                image_url = soup.find('img')['src']
+
+                print(product_title)
