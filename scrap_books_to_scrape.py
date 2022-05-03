@@ -1,4 +1,4 @@
-import requests
+import requests, os
 from bs4 import BeautifulSoup
 import csv
 
@@ -24,8 +24,8 @@ if response.ok:
     categories_url = ['https://books.toscrape.com/' + a['href'] for a in soup.find('div', class_='side_categories').findAll('ul')[1].findAll('a')]
 
     for category_url in categories_url:
-        page = 0
-        pages = 1
+        page = 1
+        pages = 2
         product_page_url = []
         universal_product_code = []
         product_title = []
@@ -53,16 +53,19 @@ if response.ok:
                         product_page = response.content
                         soup = BeautifulSoup(product_page, "html.parser")
                         product_information = [td.text for td in soup.find('table', class_='table table-striped').findAll('td')]
+                        product_description_info = soup.find('div', id='product_description')
                         product_page_url.append(product_url)
                         universal_product_code.append(product_information[0])
                         price_including_tax.append(product_information[2])
                         price_excluding_tax.append(product_information[3])
                         number_available.append(product_information[5])
                         product_title.append(soup.find('h1').text)
-                        product_description.append(soup.find('div', id='product_description').find_next('p').text)
+                        if product_description_info is not None:
+                            product_description.append(product_description_info.find_next('p').text)
                         category.append(soup.find('ul', class_='breadcrumb').findAll('a')[2].text)
                         review_rating.append(soup.find('p', class_='star-rating')['class'][1])
-                        image_url.append(soup.find('img')['src'])
+                        image_url.append('https://books.toscrape.com/' + soup.find('img')['src'].replace('../',''))
+                        print(soup.find('h1').text)
 
                 page = page+1
                 if pagination is not None:
@@ -73,7 +76,9 @@ if response.ok:
                         next_ = next_.a['href']
                         category_url = category_url.replace('index.html', next_)
 
-        with open( category[page] + '.csv', 'w') as csv_file:
+        data = 'data/' + category[page] + '.csv'
+        os.makedirs(os.path.dirname(data), exist_ok=True)
+        with open(data, 'w') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             writer.writerow(headers)
 
