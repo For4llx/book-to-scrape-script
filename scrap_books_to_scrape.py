@@ -31,11 +31,13 @@ def get_products(array, soup, url):
     product_title = soup.find('h1').text
     if product_description_info:
         product_description = product_description_info.find_next('p').text
+    else:
+        product_description = 'no data'
     category = soup.find('ul', class_='breadcrumb').findAll('a')[2].text
     review_rating = soup.find('p', class_='star-rating')['class'][1]
     image_url = 'https://books.toscrape.com/' + soup.find('img')['src'].replace('../','')
 
-    products.append([
+    array.append([
         product_page_url,
         universal_product_code,
         price_including_tax,
@@ -48,9 +50,9 @@ def get_products(array, soup, url):
         image_url
     ])
 
-    return products
+    return array
 
-
+count = 1
 home_url = 'https://books.toscrape.com/index.html'
 headers = [
   'product_page_url',
@@ -98,3 +100,6 @@ for category_url in categories_url:
 
         for product in [*products]:
             writer.writerow([*product])
+
+    print(category_name + ' ' + 'succefully scraped.' + ' ' + str(count) + '/' + str(len(categories_url)))
+    count = count + 1
